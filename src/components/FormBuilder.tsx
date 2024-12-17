@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid"; // Importing the uuidv4 function
 import {
   DragDropContext,
   Droppable,
@@ -30,13 +31,14 @@ type Layout = "single" | "double" | "triple";
 const FormBuilder: React.FC = () => {
   const [elements, setElements] = useState<FormElement[]>([]);
   const [layout, setLayout] = useState<Layout>("single");
+  const [isClient, setIsClient] = useState(false); // State to check if we are on the client
 
-  const generateUniqueId = (): string =>
-    `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
+  useEffect(() => {
+    setIsClient(true); // Update state to indicate we're on the client
+  }, []);
   const addElement = (type: FormElementType) => {
     const newElement: FormElement = {
-      id: generateUniqueId(),
+      id: uuidv4(), // Generate a unique ID using uuidv4
       type,
       label: `New ${type} field`,
       options:
@@ -66,6 +68,10 @@ const FormBuilder: React.FC = () => {
 
     setElements(reorderedElements);
   };
+
+  if (!isClient) {
+    return null; // Ensure nothing renders on the server
+  }
 
   return (
     <div className="container mx-auto p-4">

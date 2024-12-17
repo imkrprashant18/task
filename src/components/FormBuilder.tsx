@@ -8,33 +8,33 @@ import {
   DropResult,
 } from "react-beautiful-dnd";
 import FormPreview from "../components/FormPreview";
+import { generateUUID } from "@/utils/uuidGenerator";
+
+type FormElementType =
+  | "text"
+  | "number"
+  | "email"
+  | "textarea"
+  | "select"
+  | "checkbox"
+  | "radio";
 
 type FormElement = {
   id: string;
-  type:
-    | "text"
-    | "number"
-    | "email"
-    | "textarea"
-    | "select"
-    | "checkbox"
-    | "radio";
+  type: FormElementType;
   label: string;
   options?: string[];
 };
 
 type Layout = "single" | "double" | "triple";
 
-export default function FormBuilder() {
+const FormBuilder: React.FC = () => {
   const [elements, setElements] = useState<FormElement[]>([]);
   const [layout, setLayout] = useState<Layout>("single");
 
-  const generateUniqueId = () =>
-    `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-  const addElement = (type: FormElement["type"]) => {
+  const addElement = (type: FormElementType) => {
     const newElement: FormElement = {
-      id: generateUniqueId(),
+      id: generateUUID(),
       type,
       label: `New ${type} field`,
       options:
@@ -58,17 +58,18 @@ export default function FormBuilder() {
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
-    const newElements = Array.from(elements);
-    const [reorderedItem] = newElements.splice(result.source.index, 1);
-    newElements.splice(result.destination.index, 0, reorderedItem);
+    const reorderedElements = Array.from(elements);
+    const [movedElement] = reorderedElements.splice(result.source.index, 1);
+    reorderedElements.splice(result.destination.index, 0, movedElement);
 
-    setElements(newElements);
+    setElements(reorderedElements);
   };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl text-gray-600 font-bold mb-4">Form Builder</h1>
       <div className="flex flex-col lg:flex-row gap-4">
+        {/* Toolbox */}
         <div className="w-full lg:w-1/3">
           <h2 className="text-xl font-semibold mb-2 text-gray-600">Toolbox</h2>
           <div className="flex flex-wrap gap-2 mb-4">
@@ -83,13 +84,15 @@ export default function FormBuilder() {
             ].map((type) => (
               <button
                 key={type}
-                onClick={() => addElement(type as FormElement["type"])}
+                onClick={() => addElement(type as FormElementType)}
                 className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
               >
                 Add {type.charAt(0).toUpperCase() + type.slice(1)}
               </button>
             ))}
           </div>
+
+          {/* Layout Options */}
           <h2 className="text-xl font-semibold mb-2">Layout</h2>
           <div className="flex gap-2 mb-4">
             {["single", "double", "triple"].map((l) => (
@@ -106,8 +109,15 @@ export default function FormBuilder() {
               </button>
             ))}
           </div>
+
+          {/* Draggable List */}
           <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="form-elements">
+            <Droppable
+              droppableId="form-elements"
+              isDropDisabled={false}
+              isCombineEnabled={false}
+              ignoreContainerClipping={false}
+            >
               {(provided) => (
                 <div
                   {...provided.droppableProps}
@@ -136,6 +146,7 @@ export default function FormBuilder() {
                               Remove
                             </button>
                           </div>
+                          {/* Element Configuration */}
                           <input
                             type="text"
                             value={element.label}
@@ -173,6 +184,8 @@ export default function FormBuilder() {
             </Droppable>
           </DragDropContext>
         </div>
+
+        {/* Form Preview */}
         <div className="w-full lg:w-2/3">
           <h2 className="text-xl font-semibold mb-2">Form Preview</h2>
           <FormPreview elements={elements} layout={layout} />
@@ -180,4 +193,6 @@ export default function FormBuilder() {
       </div>
     </div>
   );
-}
+};
+
+export default FormBuilder;

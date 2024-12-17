@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { FormElement } from "@/type/form-builder";
@@ -9,12 +11,12 @@ interface DraggableElementProps {
   removeElement: (id: string) => void;
 }
 
-export default function DraggableElement({
+const DraggableElement: React.FC<DraggableElementProps> = ({
   element,
   index,
   updateElement,
   removeElement,
-}: DraggableElementProps) {
+}) => {
   return (
     <Draggable draggableId={element.id} index={index}>
       {(provided) => (
@@ -28,11 +30,12 @@ export default function DraggableElement({
             <span className="font-semibold">{element.type}</span>
             <button
               onClick={() => removeElement(element.id)}
-              className="text-red-500"
+              className="text-red-500 hover:text-red-700"
             >
               Remove
             </button>
           </div>
+          {/* Label Field */}
           <input
             type="text"
             value={element.label}
@@ -42,6 +45,8 @@ export default function DraggableElement({
             className="w-full p-2 border rounded mb-2"
             placeholder="Label"
           />
+
+          {/* Placeholder Field (only for non-checkbox/radio types) */}
           {element.type !== "checkbox" && element.type !== "radio" && (
             <input
               type="text"
@@ -53,6 +58,8 @@ export default function DraggableElement({
               placeholder="Placeholder"
             />
           )}
+
+          {/* Options Field (only for select/radio types) */}
           {(element.type === "select" || element.type === "radio") && (
             <textarea
               value={element.options?.join("\n") || ""}
@@ -69,4 +76,6 @@ export default function DraggableElement({
       )}
     </Draggable>
   );
-}
+};
+
+export default DraggableElement;

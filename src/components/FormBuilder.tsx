@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   DragDropContext,
   Droppable,
   Draggable,
   DropResult,
 } from "react-beautiful-dnd";
+import { v4 as uuidv4 } from "uuid"; // Import uuid
 import FormPreview from "../components/FormPreview";
-import { generateUUID } from "@/utils/uuidGenerator";
 
 type FormElementType =
   | "text"
@@ -31,10 +31,21 @@ type Layout = "single" | "double" | "triple";
 const FormBuilder: React.FC = () => {
   const [elements, setElements] = useState<FormElement[]>([]);
   const [layout, setLayout] = useState<Layout>("single");
+  const [isClient, setIsClient] = useState(false); // Track client-side rendering
+
+  // Set to true when the component is mounted on the client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Function to generate UUID
+  const generateUUID = (): string => {
+    return uuidv4(); // Use uuidv4 for unique ID generation
+  };
 
   const addElement = (type: FormElementType) => {
     const newElement: FormElement = {
-      id: generateUUID(),
+      id: generateUUID(), // Use the generateUUID function to create a unique id
       type,
       label: `New ${type} field`,
       options:
@@ -64,6 +75,11 @@ const FormBuilder: React.FC = () => {
 
     setElements(reorderedElements);
   };
+
+  // Prevent drag-and-drop context from rendering on SSR
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <div className="container mx-auto p-4">
